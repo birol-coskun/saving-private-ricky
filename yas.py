@@ -8,7 +8,7 @@ pygame.init()
 # Ekran ayarları
 width, height = 800, 600
 screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("CALL Game")
+pygame.display.set_caption("Saving Private Ricky")
 
 # Uzay gemisi resmi
 player_image = pygame.image.load("data/player1.gif")
