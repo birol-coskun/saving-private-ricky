@@ -2,58 +2,58 @@ import pygame
 import sys
 import random
 
-# Pygame'ı başlat
+# Initialize Pygame
 pygame.init()
 
-# Ekran ayarları
+# Screen settings
 width, height = 800, 600
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Saving Private Ricky")
 
-# Uzay gemisi resmi
+# Spaceship image
 player_image = pygame.image.load("data/player1.gif")
 player_image = pygame.transform.scale(player_image, (50, 50))
 
-# Uzay gemisi başlangıç konumu ve hızı
+# Spaceship starting position and speed
 player_size = 50
 player_x = width // 2 - player_size // 2
 player_y = height - player_size
 player_speed = 5
 
-# Düşman genleri
+# Enemy genes
 gene_size = 50
 gene_speed = 3
 genes = []
 
-# Mermi
+# Bullet
 bullet_size = 10
 bullet_speed = 5
 bullets = []
 
-# Skor ve süre
+# Score and time
 score = 0
 font = pygame.font.Font(None, 36)
 start_time = pygame.time.get_ticks()
 
-# Oyun durumu
+# Game state
 game_over = False
-restart_prompt = False  # Yeniden başlatma sorusu için kontrol flag'i
+restart_prompt = False  # Control flag for restart prompt
 
-# Oyun zorluğu
+# Game difficulty
 initial_enemy_count = 10
 enemy_spawn_time = 3
 last_spawn_time = pygame.time.get_ticks()
 
-# Ateş etme kontrolü
+# Shooting control
 can_shoot = True
 shoot_cooldown = 500
 last_shoot_time = pygame.time.get_ticks()
 
-# Alien resmini yükle
+# Load alien image
 alien_image = pygame.image.load("data/alien1.gif")
 alien_image = pygame.transform.scale(alien_image, (gene_size, gene_size))
 
-# Oyun döngüsü
+# Game loop
 clock = pygame.time.Clock()
 
 while True:
@@ -62,7 +62,7 @@ while True:
             pygame.quit()
             sys.exit()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and can_shoot:
-            # Ateş etme kontrolü ve mermi oluşturma
+            # Shooting control and bullet creation
             bullet_x = player_x + player_size // 2 - bullet_size // 2
             bullet_y = player_y
             bullets.append([bullet_x, bullet_y])
@@ -70,24 +70,24 @@ while True:
             last_shoot_time = pygame.time.get_ticks()
 
     if not game_over:
-        # Uzay gemisi hareketi
+        # Spaceship movement
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and player_x > 0:
             player_x -= player_speed
         if keys[pygame.K_RIGHT] and player_x < width - player_size:
             player_x += player_speed
 
-        # Düşman geni oluşturma
+        # Enemy gene creation
         current_time = pygame.time.get_ticks()
         if current_time - start_time < 1000 * initial_enemy_count:
-            # Sıfırıncı saniyede initial_enemy_count kadar düşman ekleyelim
+            # Add enemies at the beginning
             if current_time - last_spawn_time > enemy_spawn_time * 1000:
                 gene_x = random.randint(0, width - gene_size)
                 gene_y = 0
                 genes.append([gene_x, gene_y])
                 last_spawn_time = current_time
         else:
-            # Sıfırıncı saniyeden sonraki her 3 saniyede bir düşman ekleyelim
+            # Add enemies every 3 seconds after the beginning
             if current_time - last_spawn_time > enemy_spawn_time * 1000:
                 for _ in range(score // 5 + 1):
                     gene_x = random.randint(0, width - gene_size)
@@ -95,22 +95,22 @@ while True:
                     genes.append([gene_x, gene_y])
                 last_spawn_time = current_time
 
-        # Düşman geni hareketi ve skor güncelleme
+        # Enemy gene movement and score update
         for gene in genes:
             gene[1] += gene_speed
             if gene[1] > height:
                 genes.remove(gene)
-                game_over = True  # Alien alt kenarına ulaştığında oyunu bitir
-                restart_prompt = True  # Yeniden başlatma sorusunu göster
+                game_over = True  # End the game when an alien reaches the bottom
+                restart_prompt = True  # Show restart prompt
 
-        # Mermi hareketi ve çarpışma kontrolü
+        # Bullet movement and collision control
         for bullet in bullets:
             bullet[1] -= bullet_speed
             if bullet[1] < 0:
                 bullets.remove(bullet)
                 can_shoot = True
 
-            # Alien çarpışma kontrolü
+            # Alien collision control
             for gene in genes:
                 gene_rect = pygame.Rect(gene[0], gene[1], gene_size, gene_size)
                 bullet_rect = pygame.Rect(bullet[0], bullet[1], bullet_size, bullet_size)
@@ -121,27 +121,27 @@ while True:
                     score += 1
                     can_shoot = True
 
-        # Geçen süreyi hesapla
+        # Calculate elapsed time
         elapsed_time = (pygame.time.get_ticks() - start_time) // 1000
 
-        # Zorluk seviyesini kontrol et ve güncelle
-        gene_speed = 3 + elapsed_time // 20  # Her 20 saniyede bir hızı artır
+        # Check and update difficulty level
+        gene_speed = 3 + elapsed_time // 20  # Increase speed every 20 seconds
 
-        # Ekran temizleme
+        # Clear the screen
         screen.fill((0, 0, 0))
 
-        # Uzay gemisini çizme
+        # Draw the spaceship
         screen.blit(player_image, (player_x, player_y))
 
-        # Düşman genlerini çizme
+        # Draw enemy genes
         for gene in genes:
             screen.blit(alien_image, (gene[0], gene[1]))
 
-        # Mermileri çizme
+        # Draw bullets
         for bullet in bullets:
             pygame.draw.rect(screen, (255, 255, 255), [bullet[0], bullet[1], bullet_size, bullet_size])
 
-        # Skoru ve süreyi ekrana yazdırma
+        # Draw the score and time on the screen
         score_text = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(score_text, (10, 10))
 
@@ -149,19 +149,19 @@ while True:
         screen.blit(time_text, (10, 40))
 
     else:
-        # Oyun bitti mesajını ekrana yazdırma
+        # Draw the game over message
         game_over_text = font.render("Game Over", True, (255, 255, 255))
         screen.blit(game_over_text, (width // 2 - 100, height // 2 - 20))
 
         if restart_prompt:
-            # Yeniden oynamak ister misin? sorusu
+            # Draw the restart prompt
             restart_text = font.render("Do you want to play again? (Y/N)", True, (255, 255, 255))
             screen.blit(restart_text, (width // 2 - 160, height // 2 + 20))
 
-            # Kullanıcının cevabını kontrol et
+            # Check the user's response
             keys = pygame.key.get_pressed()
             if keys[pygame.K_y]:
-                # Evet ise oyunu sıfırla
+                # If yes, reset the game
                 game_over = False
                 genes = []
                 bullets = []
@@ -169,18 +169,18 @@ while True:
                 start_time = pygame.time.get_ticks()
                 restart_prompt = False
             elif keys[pygame.K_n]:
-                # Hayır ise oyunu kapat
+                # If no, close the game
                 pygame.quit()
                 sys.exit()
 
-    # Ateş etme cooldown kontrolü
+    # Shooting cooldown control
     if not can_shoot:
         current_time = pygame.time.get_ticks()
         if current_time - last_shoot_time >= shoot_cooldown:
             can_shoot = True
 
-    # Ekran güncelleme
+    # Update the screen
     pygame.display.flip()
 
-    # FPS sınırlama
+    # FPS limit
     clock.tick(60)
