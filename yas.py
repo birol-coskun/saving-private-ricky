@@ -40,8 +40,9 @@ game_over = False
 restart_prompt = False  # Yeniden başlatma sorusu için kontrol flag'i
 
 # Oyun zorluğu
-difficulty_increase_time = 120
-initial_gene_speed = 3
+initial_enemy_count = 10
+enemy_spawn_time = 3
+last_spawn_time = pygame.time.get_ticks()
 
 # Ateş etme kontrolü
 can_shoot = True
@@ -77,10 +78,22 @@ while True:
             player_x += player_speed
 
         # Düşman geni oluşturma
-        if random.randint(1, 100) < 5:  # Her frame'de 5% şansla
-            gene_x = random.randint(0, width - gene_size)
-            gene_y = 0
-            genes.append([gene_x, gene_y])
+        current_time = pygame.time.get_ticks()
+        if current_time - start_time < 1000 * initial_enemy_count:
+            # Sıfırıncı saniyede initial_enemy_count kadar düşman ekleyelim
+            if current_time - last_spawn_time > enemy_spawn_time * 1000:
+                gene_x = random.randint(0, width - gene_size)
+                gene_y = 0
+                genes.append([gene_x, gene_y])
+                last_spawn_time = current_time
+        else:
+            # Sıfırıncı saniyeden sonraki her 3 saniyede bir düşman ekleyelim
+            if current_time - last_spawn_time > enemy_spawn_time * 1000:
+                for _ in range(score // 5 + 1):
+                    gene_x = random.randint(0, width - gene_size)
+                    gene_y = 0
+                    genes.append([gene_x, gene_y])
+                last_spawn_time = current_time
 
         # Düşman geni hareketi ve skor güncelleme
         for gene in genes:
@@ -112,8 +125,7 @@ while True:
         elapsed_time = (pygame.time.get_ticks() - start_time) // 1000
 
         # Zorluk seviyesini kontrol et ve güncelle
-        if elapsed_time > difficulty_increase_time:
-            gene_speed = initial_gene_speed + elapsed_time - difficulty_increase_time
+        gene_speed = 3 + elapsed_time // 20  # Her 20 saniyede bir hızı artır
 
         # Ekran temizleme
         screen.fill((0, 0, 0))
